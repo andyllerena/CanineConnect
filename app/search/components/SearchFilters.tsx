@@ -1,5 +1,6 @@
 import React from "react";
 import { Filter, ChevronDown } from "lucide-react";
+import { useBreeds } from "@/lib/hooks/useBreeds";
 
 interface Filters {
   breeds: string[];
@@ -15,24 +16,14 @@ interface SearchFiltersProps {
   onToggle: () => void;
 }
 
-const mockBreeds = [
-  "Labrador Retriever",
-  "English Springer Spaniel Cocker Spaniel Mix",
-  "English Springer Spaniel Border Collie Mix",
-  "Chihuahua",
-  "Golden Retriever",
-  "German Shepherd Mix",
-  "Beagle",
-  "Bulldog",
-  "Poodle",
-];
-
 const SearchFilters: React.FC<SearchFiltersProps> = ({
   filters,
   onFiltersChange,
   isOpen,
   onToggle,
 }) => {
+  const { breeds, loading: breedsLoading, error: breedsError } = useBreeds();
+
   return (
     <div
       className={`bg-white rounded-2xl shadow-sm transition-all duration-300 ${
@@ -78,16 +69,28 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
                   );
                   onFiltersChange({ ...filters, breeds: values });
                 }}
+                disabled={breedsLoading}
               >
-                {mockBreeds.map((breed) => (
-                  <option key={breed} value={breed}>
-                    {breed}
-                  </option>
-                ))}
+                {breedsLoading ? (
+                  <option disabled>Loading breeds...</option>
+                ) : breedsError ? (
+                  <option disabled>Error loading breeds</option>
+                ) : (
+                  breeds.map((breed) => (
+                    <option key={breed} value={breed}>
+                      {breed}
+                    </option>
+                  ))
+                )}
               </select>
               <p className="text-xs text-gray-500 mt-1">
                 Hold Ctrl/Cmd to select multiple
               </p>
+              {breedsError && (
+                <p className="text-xs text-red-500 mt-1">
+                  Failed to load breeds. Please try refreshing the page.
+                </p>
+              )}
             </div>
 
             {/* Age Range */}

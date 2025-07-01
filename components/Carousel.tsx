@@ -16,6 +16,7 @@ export default function Carousel() {
       gender: "Female",
       location: "Rancho Cucamonga, CA",
       backgroundColor: "bg-teal-400",
+      imageUrl: "../husky.jpg",
     },
     {
       ...dogs[1],
@@ -25,6 +26,7 @@ export default function Carousel() {
       gender: "Male",
       location: "Los Angeles, CA",
       backgroundColor: "bg-yellow-400",
+      imageUrl: "../germanshep.jpg",
     },
     {
       ...dogs[2],
@@ -34,6 +36,7 @@ export default function Carousel() {
       gender: "Female",
       location: "Beverly Hills, CA",
       backgroundColor: "bg-blue-400",
+      imageUrl: "../Yorkie.jpg",
     },
   ];
 
@@ -79,7 +82,7 @@ export default function Carousel() {
               }}
               onClick={() => !isCenter && setCurrentIndex(idx)}
             >
-              <DogCard dog={dog} backgroundColor={dog.backgroundColor} />
+              <DogCard dog={dog} />
             </div>
           );
         })}

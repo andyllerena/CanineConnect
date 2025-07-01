@@ -1,12 +1,6 @@
-import type { Dog } from "@/data/dog";
 import { Heart } from "lucide-react";
 
-interface DogCardProps {
-  dog: Dog & { backgroundColor?: string };
-  priority?: "urgent" | "normal";
-}
-
-export default function DogCard({ dog, priority = "normal" }: DogCardProps) {
+export default function DogCard({ dog }: { dog: any }) {
   return (
     <div
       className={`

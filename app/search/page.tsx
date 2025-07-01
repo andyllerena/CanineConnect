@@ -1,63 +1,16 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import SearchFilters from "./components/SearchFilters";
 import SortControls from "./components/SortControls";
 import SearchResults from "./components/SearchResults";
 import FavoritesPanel from "./components/FavoritesPanel";
 import MatchModal from "./components/MatchModal";
 import Pagination from "./components/Pagination";
-
-// Mock data for static development
-const mockDogs = [
-  {
-    id: "1",
-    name: "Rico",
-    breed: "Labrador Retriever",
-    age: 4,
-    zip_code: "90210",
-    img: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=400&fit=crop",
-  },
-  {
-    id: "2",
-    name: "Jesse",
-    breed: "English Springer Spaniel Cocker Spaniel Mix",
-    age: 2,
-    zip_code: "90028",
-    img: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop",
-  },
-  {
-    id: "3",
-    name: "King",
-    breed: "English Springer Spaniel Border Collie Mix",
-    age: 6,
-    zip_code: "90028",
-    img: "https://images.unsplash.com/photo-1551717743-49959800b1f6?w=400&h=400&fit=crop",
-  },
-  {
-    id: "4",
-    name: "Rory",
-    breed: "Chihuahua",
-    age: 3,
-    zip_code: "90069",
-    img: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop",
-  },
-  {
-    id: "5",
-    name: "Mike",
-    breed: "Golden Retriever",
-    age: 5,
-    zip_code: "90210",
-    img: "https://images.unsplash.com/photo-1552053831-71594a27632d?w=400&h=400&fit=crop",
-  },
-  {
-    id: "6",
-    name: "Remi",
-    breed: "German Shepherd Mix",
-    age: 1,
-    zip_code: "90028",
-    img: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400&h=400&fit=crop",
-  },
-];
+import { useDogs } from "../../lib/hooks/useDogs";
+import { useFavorites } from "../../lib/hooks/useFavorites";
+import { useMatch } from "../../lib/hooks/useMatch";
+import { filtersToSearchParams } from "../../lib/utils/queryParams";
 
 interface Filters {
   breeds: string[];
@@ -77,52 +30,106 @@ const SearchPage: React.FC = () => {
   const [sortBy, setSortBy] = useState<string>("breed");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [filtersOpen, setFiltersOpen] = useState<boolean>(false);
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [showMatch, setShowMatch] = useState<boolean>(false);
-  const [matchedDog, setMatchedDog] = useState<any>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const totalPages = 25; // Mock total pages
+  const [showMatch, setShowMatch] = useState<boolean>(false);
+
+  const pageSize = 25;
+
+  // Convert filters to search params
+  const searchParams = filtersToSearchParams(
+    filters,
+    sortBy,
+    sortDirection,
+    currentPage,
+    pageSize
+  );
+
+  // Use hooks
+  const { dogs, loading, error, searchResults, totalPages, refetch } =
+    useDogs(searchParams);
+  const {
+    favorites,
+    favoriteDogs,
+    loadingFavorites,
+    addFavorite,
+    removeFavorite,
+    toggleFavorite,
+    isFavorite,
+    loadFavoriteDogs,
+  } = useFavorites();
+  const {
+    generateMatch,
+    matchedDog,
+    loading: matchLoading,
+    error: matchError,
+  } = useMatch();
+
+  // Load favorite dogs when favorites change
+  useEffect(() => {
+    if (favorites.length > 0) {
+      loadFavoriteDogs();
+    }
+  }, [favorites, loadFavoriteDogs]);
 
   const handleSortChange = (field: string, direction: "asc" | "desc") => {
     setSortBy(field);
     setSortDirection(direction);
-    // TODO: Implement actual sorting logic
-    console.log(`Sorting by ${field} ${direction}`);
+    setCurrentPage(1); // Reset to first page when sorting
   };
 
   const handleToggleFavorite = (dogId: string) => {
-    setFavorites((prev) =>
-      prev.includes(dogId)
-        ? prev.filter((id) => id !== dogId)
-        : [...prev, dogId]
-    );
+    toggleFavorite(dogId);
   };
 
-  const handleGenerateMatch = () => {
-    // TODO: Call API to generate match
-    // For now, randomly select from favorites
-    const randomFavorite = mockDogs.find((dog) => favorites.includes(dog.id));
-    setMatchedDog(randomFavorite);
-    setShowMatch(true);
+  const handleGenerateMatch = async () => {
+    if (favorites.length === 0) {
+      alert("Please add some dogs to favorites first!");
+      return;
+    }
+
+    try {
+      await generateMatch(favorites);
+      setShowMatch(true);
+    } catch (error) {
+      console.error("Failed to generate match:", error);
+      alert("Failed to generate match. Please try again.");
+    }
   };
 
   const handleRemoveFavorite = (dogId: string) => {
-    setFavorites((prev) => prev.filter((id) => id !== dogId));
+    removeFavorite(dogId);
   };
 
   const handleCloseMatch = () => {
     setShowMatch(false);
-    setMatchedDog(null);
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // TODO: Implement actual pagination logic
-    console.log(`Changing to page ${page}`);
   };
 
+  const handleFiltersChange = (newFilters: Filters) => {
+    setFilters(newFilters);
+    setCurrentPage(1); // Reset to first page when filters change
+  };
+
+  const router = useRouter();
+
+  const handleLogout = useCallback(async () => {
+    try {
+      await fetch("https://frontend-take-home-service.fetch.com/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (err) {
+      console.error("Logout failed", err);
+    } finally {
+      router.push("/");
+    }
+  }, [router]);
+
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -130,8 +137,18 @@ const SearchPage: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-900">
               Find Your Perfect Match
             </h1>
-            <div className="text-sm text-gray-600">
-              {mockDogs.length} dogs available
+            <div className="text-sm text-gray-600 ">
+              {loading
+                ? "Loading..."
+                : searchResults
+                ? `${searchResults.total} dogs available`
+                : "0 dogs available"}
+              <button
+                onClick={handleLogout}
+                className="ml-4 px-3 py-1 text-sm font-medium text-red-600 border border-gray-300 rounded-md hover:bg-red-50 hover:border-red-600"
+              >
+                Logout
+              </button>
             </div>
           </div>
         </div>
@@ -144,7 +161,7 @@ const SearchPage: React.FC = () => {
             {/* Filters */}
             <SearchFilters
               filters={filters}
-              onFiltersChange={setFilters}
+              onFiltersChange={handleFiltersChange}
               isOpen={filtersOpen}
               onToggle={() => setFiltersOpen(!filtersOpen)}
             />
@@ -158,19 +175,73 @@ const SearchPage: React.FC = () => {
               />
             </div>
 
-            {/* Results Grid */}
-            <SearchResults
-              dogs={mockDogs}
-              favorites={favorites}
-              onToggleFavorite={handleToggleFavorite}
-            />
+            {/* Error State */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="flex items-center">
+                  <div className="text-red-800">
+                    <strong>Error:</strong> {error}
+                  </div>
+                  <button
+                    onClick={refetch}
+                    className="ml-4 px-3 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded text-sm"
+                  >
+                    Retry
+                  </button>
+                </div>
+              </div>
+            )}
 
-            {/* Pagination */}
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
+            {/* Loading State */}
+            {loading && (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span className="ml-2 text-gray-600">Loading dogs...</span>
+              </div>
+            )}
+
+            {/* Results Grid */}
+            {!loading && !error && (
+              <>
+                <SearchResults
+                  dogs={dogs}
+                  favorites={favorites}
+                  onToggleFavorite={handleToggleFavorite}
+                />
+
+                {/* No Results */}
+                {dogs.length === 0 && (
+                  <div className="text-center py-12">
+                    <div className="text-gray-500">
+                      No dogs found matching your criteria.
+                    </div>
+                    <button
+                      onClick={() => {
+                        setFilters({
+                          breeds: [],
+                          ageMin: "",
+                          ageMax: "",
+                          zipCode: "",
+                        });
+                        setCurrentPage(1);
+                      }}
+                      className="mt-2 text-blue-600 hover:text-blue-500"
+                    >
+                      Clear filters
+                    </button>
+                  </div>
+                )}
+
+                {/* Pagination */}
+                {dogs.length > 0 && totalPages > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                )}
+              </>
+            )}
           </div>
 
           {/* Favorites Sidebar */}
@@ -178,9 +249,11 @@ const SearchPage: React.FC = () => {
             <div className="sticky top-6">
               <FavoritesPanel
                 favorites={favorites}
-                dogs={mockDogs}
+                dogs={favoriteDogs}
                 onGenerateMatch={handleGenerateMatch}
                 onRemoveFavorite={handleRemoveFavorite}
+                loading={loadingFavorites}
+                matchLoading={matchLoading}
               />
             </div>
           </div>
@@ -192,6 +265,8 @@ const SearchPage: React.FC = () => {
         isOpen={showMatch}
         matchedDog={matchedDog}
         onClose={handleCloseMatch}
+        loading={matchLoading}
+        error={matchError}
       />
     </div>
   );
