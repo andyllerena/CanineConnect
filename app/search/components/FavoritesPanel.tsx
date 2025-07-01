@@ -1,5 +1,5 @@
 import React from "react";
-import { Heart } from "lucide-react";
+import { Heart, Loader } from "lucide-react";
 
 interface Dog {
   id: string;
@@ -15,6 +15,8 @@ interface FavoritesPanelProps {
   dogs: Dog[];
   onGenerateMatch: () => void;
   onRemoveFavorite: (dogId: string) => void;
+  loading?: boolean;
+  matchLoading?: boolean;
 }
 
 const FavoritesPanel: React.FC<FavoritesPanelProps> = ({
@@ -22,6 +24,8 @@ const FavoritesPanel: React.FC<FavoritesPanelProps> = ({
   dogs,
   onGenerateMatch,
   onRemoveFavorite,
+  loading = false,
+  matchLoading = false,
 }) => {
   const favoriteDogs = dogs.filter((dog) => favorites.includes(dog.id));
 
@@ -34,9 +38,17 @@ const FavoritesPanel: React.FC<FavoritesPanelProps> = ({
         {favorites.length > 0 && (
           <button
             onClick={onGenerateMatch}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
+            disabled={matchLoading}
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
           >
-            Find My Match!
+            {matchLoading ? (
+              <>
+                <Loader className="w-4 h-4 animate-spin" />
+                Finding...
+              </>
+            ) : (
+              "Find My Match!"
+            )}
           </button>
         )}
       </div>
@@ -49,28 +61,40 @@ const FavoritesPanel: React.FC<FavoritesPanelProps> = ({
         </div>
       ) : (
         <div className="space-y-3 max-h-96 overflow-y-auto">
-          {favoriteDogs.map((dog) => (
-            <div
-              key={dog.id}
-              className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
-            >
-              <img
-                src={dog.img}
-                alt={dog.name}
-                className="w-12 h-12 rounded-lg object-cover"
-              />
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-gray-900 truncate">{dog.name}</p>
-                <p className="text-sm text-gray-500 truncate">{dog.breed}</p>
-              </div>
-              <button
-                onClick={() => onRemoveFavorite(dog.id)}
-                className="text-red-500 hover:text-red-700 p-1"
-              >
-                <Heart className="w-4 h-4 fill-current" />
-              </button>
+          {loading ? (
+            <div className="flex justify-center py-4">
+              <Loader className="w-5 h-5 animate-spin text-gray-400" />
+              <span className="ml-2 text-sm text-gray-500">
+                Loading favorites...
+              </span>
             </div>
-          ))}
+          ) : (
+            favoriteDogs.map((dog) => (
+              <div
+                key={dog.id}
+                className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+              >
+                <img
+                  src={dog.img}
+                  alt={dog.name}
+                  className="w-12 h-12 rounded-lg object-cover"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 truncate">
+                    {dog.name}
+                  </p>
+                  <p className="text-sm text-gray-500 truncate">{dog.breed}</p>
+                </div>
+                <button
+                  onClick={() => onRemoveFavorite(dog.id)}
+                  className="text-red-500 hover:text-red-700 p-1 transition-colors"
+                  disabled={matchLoading}
+                >
+                  <Heart className="w-4 h-4 fill-current" />
+                </button>
+              </div>
+            ))
+          )}
         </div>
       )}
     </div>

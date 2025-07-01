@@ -23,8 +23,12 @@ const DogCard: React.FC<DogCardProps> = ({
 }) => {
   return (
     <div className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden group">
-      <div className="relative">
-        <img src={dog.img} alt={dog.name} className="" />
+      <div className="relative overflow-hidden h-65">
+        <img
+          src={dog.img}
+          alt={dog.name}
+          className="w-full h-full object-cover"
+        />
         <button
           onClick={() => onToggleFavorite(dog.id)}
           className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-sm border transition-all duration-200 ${
