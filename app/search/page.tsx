@@ -11,6 +11,7 @@ import { useDogs } from "../../lib/hooks/useDogs";
 import { useFavorites } from "../../lib/hooks/useFavorites";
 import { useMatch } from "../../lib/hooks/useMatch";
 import { filtersToSearchParams } from "../../lib/utils/queryParams";
+import { SortField } from "@/lib/utils/sorting";
 
 interface Filters {
   breeds: string[];
@@ -27,7 +28,7 @@ const SearchPage: React.FC = () => {
     zipCode: "",
   });
 
-  const [sortBy, setSortBy] = useState<string>("breed");
+  const [sortBy, setSortBy] = useState<SortField>("breed");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [filtersOpen, setFiltersOpen] = useState<boolean>(false);
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -51,10 +52,10 @@ const SearchPage: React.FC = () => {
     favorites,
     favoriteDogs,
     loadingFavorites,
-    addFavorite,
+
     removeFavorite,
     toggleFavorite,
-    isFavorite,
+
     loadFavoriteDogs,
   } = useFavorites();
   const {
@@ -71,7 +72,7 @@ const SearchPage: React.FC = () => {
     }
   }, [favorites, loadFavoriteDogs]);
 
-  const handleSortChange = (field: string, direction: "asc" | "desc") => {
+  const handleSortChange = (field: SortField, direction: "asc" | "desc") => {
     setSortBy(field);
     setSortDirection(direction);
     setCurrentPage(1); // Reset to first page when sorting
@@ -124,7 +125,7 @@ const SearchPage: React.FC = () => {
     } catch (err) {
       console.error("Logout failed", err);
     } finally {
-      router.push("/");
+      router.push("/"); // send them back to your main/login page
     }
   }, [router]);
 

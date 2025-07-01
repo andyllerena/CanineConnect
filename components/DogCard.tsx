@@ -1,6 +1,18 @@
 import { Heart } from "lucide-react";
+interface Dog {
+  name: string;
+  breed: string;
+  age: number;
+  gender?: string;
+  location?: string;
+  imageUrl: string;
+  backgroundColor?: string;
+}
 
-export default function DogCard({ dog }: { dog: any }) {
+interface DogCardProps {
+  dog: Dog;
+}
+export default function DogCard({ dog }: DogCardProps) {
   return (
     <div
       className={`

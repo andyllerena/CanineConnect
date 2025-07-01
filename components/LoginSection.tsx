@@ -48,9 +48,14 @@ export default function LoginSection() {
         throw new Error(errorMessage);
       }
       router.push("/search");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Login error:", err);
-      setError(err.message || "Something went wrong. Please try again.");
+
+      if (err instanceof Error) {
+        setError(err.message || "Something went wrong. Please try again.");
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

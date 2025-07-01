@@ -3,7 +3,11 @@
 const BASE_URL = "https://frontend-take-home-service.fetch.com";
 
 export class ApiError extends Error {
-  constructor(message: string, public status: number, public response?: any) {
+  constructor(
+    message: string,
+    public status: number,
+    public response?: unknown
+  ) {
     super(message);
     this.name = "ApiError";
   }
@@ -16,7 +20,7 @@ export class ApiClient {
     this.baseUrl = baseUrl;
   }
 
-  async get<T>(endpoint: string, params?: Record<string, any>): Promise<T> {
+  async get<T>(endpoint: string, params?: Record<string, unknown>): Promise<T> {
     const url = new URL(`${this.baseUrl}${endpoint}`);
 
     if (params) {
@@ -53,7 +57,7 @@ export class ApiClient {
     return response.json();
   }
 
-  async post<T>(endpoint: string, body?: any): Promise<T> {
+  async post<T>(endpoint: string, body?: unknown): Promise<T> {
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: "POST",
       credentials: "include",

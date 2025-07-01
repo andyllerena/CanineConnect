@@ -20,8 +20,8 @@ export default function HomePage() {
             Ready to adopt a pet?
           </h2>
           <p className="text-lg mb-6">
-            Let's get started. Search adoptable pets from shelters, rescues, and
-            individuals.
+            Let&apos;s get started. Search adoptable pets from shelters,
+            rescues, and individuals.
           </p>
           <LoginSection />
         </div>

@@ -40,7 +40,7 @@ const MatchModal: React.FC<MatchModalProps> = ({
               <Loader className="w-12 h-12 animate-spin text-blue-600" />
             </div>
             <p className="text-gray-600 mb-6">
-              We're analyzing your favorites to find the perfect match!
+              We&apos;re analyzing your favorites to find the perfect match!
             </p>
           </>
         ) : error ? (
@@ -72,7 +72,7 @@ const MatchModal: React.FC<MatchModalProps> = ({
           // Success State
           <>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              🎉 It's a Match!
+              🎉 It&apos;s a Match!
             </h2>
             <img
               src={matchedDog.img}
@@ -105,7 +105,8 @@ const MatchModal: React.FC<MatchModalProps> = ({
               No Match Found
             </h2>
             <p className="text-gray-600 mb-6">
-              We couldn't find a match. Try adding more dogs to your favorites!
+              We couldn&apos;t find a match. Try adding more dogs to your
+              favorites!
             </p>
             <button
               onClick={onClose}

@@ -64,7 +64,7 @@ export default function Carousel() {
           // Styling based on position
           const isCenter = position === 0;
           const isLeft = position === -1;
-          const isRight = position === 1;
+          // const isRight = position === 1;
 
           const translateX = isCenter ? "0px" : isLeft ? "-180px" : "180px";
           const scale = isCenter ? 1 : 0.85;

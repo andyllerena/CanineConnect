@@ -3,11 +3,7 @@
 import { useState, useEffect } from "react";
 import { Dog, DogSearchParams, DogSearchResponse } from "../api/types";
 import { dogsApi } from "../api/dogs";
-import {
-  calculateTotalPages,
-  cursorToPage,
-  parseCursor,
-} from "../utils/queryParams";
+import { calculateTotalPages, cursorToPage } from "../utils/queryParams";
 
 interface UseDogsResult {
   dogs: Dog[];
